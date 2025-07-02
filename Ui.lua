@@ -1,137 +1,121 @@
--- MarkHub UI v2 by DeadMark666X
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local StarterGui = game:GetService("StarterGui")
 
-local CorrectKey = "MARK123"
+-- Orion UI Lib
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 
--- UI Setup
-local ScreenGui = Instance.new("ScreenGui", PlayerGui)
-ScreenGui.Name = "MarkHub"
-ScreenGui.ResetOnSpawn = false
+-- Key System
+local CorrectKey = "MARK123" -- GANTI KEY DISINI
+local hasKey = false
 
--- Main Frame
-local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0, 500, 0, 320)
-Main.Position = UDim2.new(0.5, -250, 0.5, -160)
-Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Main.BackgroundTransparency = 0.2
-Main.BorderSizePixel = 0
-Main.Visible = false
-Main.Parent = ScreenGui
-Main.Active = true
-Main.Draggable = true
+OrionLib:MakeNotification({
+    Name = "MarkHub",
+    Content = "Press RightCtrl to toggle UI",
+    Image = "rbxassetid://4483345998",
+    Time = 5
+})
 
--- Header
-local Header = Instance.new("TextLabel", Main)
-Header.Size = UDim2.new(1, 0, 0, 40)
-Header.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-Header.Text = "MarkHub"
-Header.Font = Enum.Font.GothamBlack
-Header.TextColor3 = Color3.fromRGB(255, 255, 255)
-Header.TextSize = 24
+OrionLib:MakeNotification({
+    Name = "Key System",
+    Content = "Please enter key to access MarkHub",
+    Image = "rbxassetid://4483345998",
+    Time = 5
+})
 
--- Close Button
-local Close = Instance.new("TextButton", Main)
-Close.Size = UDim2.new(0, 40, 0, 30)
-Close.Position = UDim2.new(1, -45, 0, 5)
-Close.Text = "X"
-Close.Font = Enum.Font.GothamBold
-Close.TextColor3 = Color3.new(1, 1, 1)
-Close.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
-Close.TextSize = 18
-Close.MouseButton1Click:Connect(function()
-	Main.Visible = false
-end)
+-- Prompt key input
+OrionLib:Init()
 
--- Sidebar Putih
-local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 120, 1, -40)
-Sidebar.Position = UDim2.new(0, 0, 0, 40)
-Sidebar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Sidebar.BackgroundTransparency = 0.9
+local function promptKey()
+    OrionLib:MakeWindow({
+        Name = "MarkHub Key System",
+        HidePremium = false,
+        SaveConfig = false,
+        IntroEnabled = false,
+        ConfigFolder = "MarkHubKey"
+    })
 
--- Content Area
-local Content = Instance.new("Frame", Main)
-Content.Size = UDim2.new(1, -120, 1, -40)
-Content.Position = UDim2.new(0, 120, 0, 40)
-Content.BackgroundTransparency = 1
+    OrionLib:MakeNotification({
+        Name = "Input Key",
+        Content = "Use key: MARK123",
+        Time = 5
+    })
+end
 
--- Toggle Aimbot
-local AimbotToggle = Instance.new("TextButton", Content)
-AimbotToggle.Size = UDim2.new(0, 150, 0, 40)
-AimbotToggle.Position = UDim2.new(0, 20, 0, 20)
-AimbotToggle.Text = "Aimbot: OFF"
-AimbotToggle.Font = Enum.Font.Gotham
-AimbotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-AimbotToggle.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-AimbotToggle.TextSize = 18
+promptKey()
 
-local AimbotEnabled = false
-AimbotToggle.MouseButton1Click:Connect(function()
-	AimbotEnabled = not AimbotEnabled
-	AimbotToggle.Text = "Aimbot: " .. (AimbotEnabled and "ON" or "OFF")
-end)
+-- UI setelah key benar
+local function loadHub()
+    local Window = OrionLib:MakeWindow({
+        Name = "MarkHub - Emergency Hamburg",
+        HidePremium = false,
+        SaveConfig = false,
+        IntroEnabled = true,
+        IntroText = "MarkHub by DeadMark666X",
+        ConfigFolder = "MarkHub"
+    })
 
--- Toggle ESP
-local ESPToggle = Instance.new("TextButton", Content)
-ESPToggle.Size = UDim2.new(0, 150, 0, 40)
-ESPToggle.Position = UDim2.new(0, 20, 0, 80)
-ESPToggle.Text = "ESP: OFF"
-ESPToggle.Font = Enum.Font.Gotham
-ESPToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-ESPToggle.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-ESPToggle.TextSize = 18
+    local CombatTab = Window:MakeTab({
+        Name = "Combat",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
 
-local ESPEnabled = false
-ESPToggle.MouseButton1Click:Connect(function()
-	ESPEnabled = not ESPEnabled
-	ESPToggle.Text = "ESP: " .. (ESPEnabled and "ON" or "OFF")
-end)
+    local VisualTab = Window:MakeTab({
+        Name = "Visual",
+        Icon = "rbxassetid://6031075938", -- eye icon
+        PremiumOnly = false
+    })
 
--- Key Frame (Unlock UI)
-local KeyFrame = Instance.new("Frame", ScreenGui)
-KeyFrame.Size = UDim2.new(0, 320, 0, 180)
-KeyFrame.Position = UDim2.new(0.5, -160, 0.5, -90)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-KeyFrame.BorderSizePixel = 0
+    -- Aimbot
+    CombatTab:AddToggle({
+        Name = "Auto Aimbot (Hold Left Click)",
+        Default = false,
+        Callback = function(Value)
+            _G.AimbotEnabled = Value
+        end
+    })
 
-local KeyBox = Instance.new("TextBox", KeyFrame)
-KeyBox.Size = UDim2.new(0.8, 0, 0, 40)
-KeyBox.Position = UDim2.new(0.1, 0, 0.2, 0)
-KeyBox.PlaceholderText = "Enter Key Here"
-KeyBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-KeyBox.TextSize = 18
-KeyBox.ClearTextOnFocus = false
-KeyBox.Font = Enum.Font.Gotham
+    -- ESP
+    VisualTab:AddToggle({
+        Name = "ESP (Show Players)",
+        Default = false,
+        Callback = function(Value)
+            _G.ESPEnabled = Value
+        end
+    })
 
-local Submit = Instance.new("TextButton", KeyFrame)
-Submit.Size = UDim2.new(0.8, 0, 0, 40)
-Submit.Position = UDim2.new(0.1, 0, 0.6, 0)
-Submit.Text = "Unlock Hub"
-Submit.Font = Enum.Font.GothamBold
-Submit.TextColor3 = Color3.fromRGB(255, 255, 255)
-Submit.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-Submit.TextSize = 18
+    -- Jalankan fungsi aimbot
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/DeadMark666X/MarkHub/main/autoaim.lua"))()
 
-Submit.MouseButton1Click:Connect(function()
-	if KeyBox.Text == CorrectKey then
-		KeyFrame.Visible = false
-		Main.Visible = true
-	else
-		KeyBox.Text = "Wrong Key!"
-	end
-end)
+    -- Jalankan ESP
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/DeadMark666X/MarkHub/main/esp.lua"))()
+end
 
--- Buka Tutup pakai RightControl
-UserInputService.InputBegan:Connect(function(input, processed)
-	if not processed and input.KeyCode == Enum.KeyCode.RightControl then
-		Main.Visible = not Main.Visible
-	end
-end)
-
--- Auto load fitur lain (autoaim.lua, esp.lua) jika file tersedia
-pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/DeadMark666X/MarkHub/main/autoaim.lua"))() end)
-pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/DeadMark666X/MarkHub/main/esp.lua"))() end)
+-- Key Box UI (manual input)
+OrionLib:MakeTab({
+    Name = "🔐 Key Input",
+    Icon = "rbxassetid://6031280882",
+    PremiumOnly = false
+}):AddTextbox({
+    Name = "Enter Key",
+    Default = "",
+    TextDisappear = true,
+    Callback = function(value)
+        if value == CorrectKey then
+            OrionLib:MakeNotification({
+                Name = "Access Granted",
+                Content = "Welcome to MarkHub!",
+                Time = 3
+            })
+            wait(1)
+            loadHub()
+        else
+            OrionLib:MakeNotification({
+                Name = "Wrong Key",
+                Content = "Please try again.",
+                Time = 3
+            })
+        end
+    end
+})

@@ -1,75 +1,70 @@
--- ESP by DeadMark666X
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
-local ESPEnabled = true
-local ESPFolder = Instance.new("Folder", game.CoreGui)
-ESPFolder.Name = "MarkHub_ESP"
+-- Bersihkan ESP lama
+if workspace:FindFirstChild("MarkHubESP") then
+	workspace.MarkHubESP:Destroy()
+end
 
--- Utility: Buat Box + Nama
+local ESPFolder = Instance.new("Folder", workspace)
+ESPFolder.Name = "MarkHubESP"
+
+-- Fungsi untuk bikin ESP 1 pemain
 local function createESP(player)
 	if player == LocalPlayer then return end
-	local char = player.Character
-	if not char then return end
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
 
-	local box = Drawing.new("Square")
-	box.Thickness = 2
-	box.Transparency = 1
-	box.Color = Color3.new(1, 0, 0) -- Default merah
-	box.Filled = false
+	player.CharacterAdded:Connect(function(character)
+		wait(1) -- Tunggu part muncul
+		local head = character:WaitForChild("Head", 3)
+		if not head then return end
 
-	local nameTag = Drawing.new("Text")
-	nameTag.Size = 16
-	nameTag.Center = true
-	nameTag.Outline = true
-	nameTag.Color = Color3.new(1, 1, 1)
-
-	local function update()
-		if not ESPEnabled or not player.Character or not hrp then
-			box.Visible = false
-			nameTag.Visible = false
-			return
+		-- Cek dan hapus ESP lama
+		if head:FindFirstChild("ESP") then
+			head.ESP:Destroy()
 		end
 
-		local pos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(hrp.Position)
-		if onScreen then
-			local size = Vector2.new(60, 100)
-			box.Size = size
-			box.Position = Vector2.new(pos.X - size.X / 2, pos.Y - size.Y / 2)
-			box.Visible = true
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "ESP"
+		billboard.Adornee = head
+		billboard.Size = UDim2.new(0, 100, 0, 40)
+		billboard.StudsOffset = Vector3.new(0, 2, 0)
+		billboard.AlwaysOnTop = true
+		billboard.Parent = head
 
-			nameTag.Text = player.Name
-			nameTag.Position = Vector2.new(pos.X, pos.Y - size.Y / 2 - 14)
-			nameTag.Visible = true
+		local text = Instance.new("TextLabel")
+		text.Size = UDim2.new(1, 0, 1, 0)
+		text.BackgroundTransparency = 1
+		text.TextColor3 = Color3.fromRGB(255, 0, 0)
+		text.TextStrokeTransparency = 0
+		text.Font = Enum.Font.GothamBold
+		text.TextScaled = true
+		text.Text = player.Name
+		text.Parent = billboard
 
-			-- Highlight jika wanted
+		-- Kalau dia Wanted, ubah warna jadi kuning
+		local function updateColor()
 			local stats = player:FindFirstChild("leaderstats")
 			if stats and stats:FindFirstChild("Wanted") and tonumber(stats.Wanted.Value) > 0 then
-				box.Color = Color3.new(1, 1, 0) -- kuning untuk wanted
+				text.TextColor3 = Color3.fromRGB(255, 255, 0) -- Wanted = Kuning
 			else
-				box.Color = Color3.new(1, 0, 0)
+				text.TextColor3 = Color3.fromRGB(255, 0, 0) -- Normal = Merah
 			end
-		else
-			box.Visible = false
-			nameTag.Visible = false
 		end
-	end
 
-	RunService.RenderStepped:Connect(update)
-end
-
--- Pasang ESP untuk semua player yang ada
-for _, player in ipairs(Players:GetPlayers()) do
-	createESP(player)
-end
-
--- Pasang ESP kalau ada player baru join
-Players.PlayerAdded:Connect(function(player)
-	player.CharacterAdded:Connect(function()
-		wait(1)
-		createESP(player)
+		updateColor()
+		task.spawn(function()
+			while text.Parent and player.Parent do
+				updateColor()
+				wait(2)
+			end
+		end)
 	end)
-end)
+end
+
+-- Pasang ke semua pemain yang sudah ada
+for _, p in pairs(Players:GetPlayers()) do
+	createESP(p)
+end
+
+-- Kalau ada player baru masuk
+Players.PlayerAdded:Connect(createESP)

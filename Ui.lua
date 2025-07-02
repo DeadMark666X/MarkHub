@@ -1,17 +1,18 @@
 -- MarkHub by DeadMark666X
 
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local player = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
 
-local CorrectKey = "MARK123" -- GANTI KEY DI SINI
+local CorrectKey = "MARK123"
 
--- UI Utama
-local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
 ScreenGui.Name = "MarkHub"
 ScreenGui.ResetOnSpawn = false
 
--- Frame utama (isi menu MarkHub)
+-- UI Utama
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 420, 0, 320)
 MainFrame.Position = UDim2.new(0.5, -210, 0.5, -160)
@@ -22,17 +23,15 @@ MainFrame.Parent = ScreenGui
 MainFrame.Active = true
 MainFrame.Draggable = true
 
--- Header merah
 local Header = Instance.new("TextLabel")
 Header.Size = UDim2.new(1, 0, 0, 40)
 Header.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-Header.Text = "MarkHub"
+Header.Text = "MarkHub by DeadMark666X"
 Header.TextColor3 = Color3.fromRGB(255, 255, 255)
 Header.Font = Enum.Font.GothamBold
 Header.TextSize = 20
 Header.Parent = MainFrame
 
--- Tombol Tutup
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 35, 0, 30)
 CloseBtn.Position = UDim2.new(1, -40, 0, 5)
@@ -54,7 +53,6 @@ KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 KeyFrame.BorderSizePixel = 0
 KeyFrame.Parent = ScreenGui
 
--- Input Box
 local KeyBox = Instance.new("TextBox")
 KeyBox.PlaceholderText = "Enter Key Here"
 KeyBox.Size = UDim2.new(0.8, 0, 0, 40)
@@ -66,7 +64,6 @@ KeyBox.ClearTextOnFocus = false
 KeyBox.Font = Enum.Font.Gotham
 KeyBox.Parent = KeyFrame
 
--- Tombol Submit
 local SubmitBtn = Instance.new("TextButton")
 SubmitBtn.Size = UDim2.new(0.8, 0, 0, 40)
 SubmitBtn.Position = UDim2.new(0.1, 0, 0.6, 0)
@@ -86,10 +83,72 @@ SubmitBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Tombol buka/tutup pakai RightControl
 UserInputService.InputBegan:Connect(function(input, processed)
 	if processed then return end
 	if input.KeyCode == Enum.KeyCode.RightControl then
 		MainFrame.Visible = not MainFrame.Visible
+	end
+end)
+
+-- ESP sederhana
+local function setupESP(player)
+	if player.Character and player.Character:FindFirstChild("Head") and not player.Character:FindFirstChild("ESPLabel") then
+		local billboard = Instance.new("BillboardGui", player.Character.Head)
+		billboard.Name = "ESPLabel"
+		billboard.Size = UDim2.new(0, 100, 0, 40)
+		billboard.AlwaysOnTop = true
+
+		local label = Instance.new("TextLabel", billboard)
+		label.Size = UDim2.new(1, 0, 1, 0)
+		label.BackgroundTransparency = 1
+		label.Text = player.Name
+		label.TextColor3 = Color3.new(1, 0, 0)
+		label.TextStrokeTransparency = 0
+		label.Font = Enum.Font.GothamBold
+		label.TextSize = 14
+	end
+end
+
+for _, p in pairs(Players:GetPlayers()) do
+	if p ~= LocalPlayer then
+		setupESP(p)
+	end
+end
+
+Players.PlayerAdded:Connect(function(p)
+	p.CharacterAdded:Connect(function()
+		wait(1)
+		setupESP(p)
+	end)
+end)
+
+-- Aimbot semua musuh
+local function getClosestEnemy()
+	local shortest = math.huge
+	local target = nil
+
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local hrp = player.Character.HumanoidRootPart
+			local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+			if onScreen then
+				local dist = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
+				if dist < shortest then
+					shortest = dist
+					target = player
+				end
+			end
+		end
+	end
+
+	return target
+end
+
+RunService.RenderStepped:Connect(function()
+	if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+		local target = getClosestEnemy()
+		if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+			Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Character.HumanoidRootPart.Position)
+		end
 	end
 end)

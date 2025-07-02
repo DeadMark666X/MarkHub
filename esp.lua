@@ -1,70 +1,40 @@
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 
--- Bersihkan ESP lama
-if workspace:FindFirstChild("MarkHubESP") then
-	workspace.MarkHubESP:Destroy()
+_G.ESPEnabled = _G.ESPEnabled or false
+
+local function createBillboard(player)
+	local character = player.Character
+	if not character or not character:FindFirstChild("Head") then return end
+
+	if character:FindFirstChild("MarkHubESP") then return end
+
+	local bb = Instance.new("BillboardGui", character.Head)
+	bb.Name = "MarkHubESP"
+	bb.Size = UDim2.new(0, 100, 0, 20)
+	bb.AlwaysOnTop = true
+
+	local label = Instance.new("TextLabel", bb)
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.Text = player.Name
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Color3.new(1, 0, 0)
+	label.TextStrokeTransparency = 0
+	label.Font = Enum.Font.GothamBold
+	label.TextScaled = true
 end
 
-local ESPFolder = Instance.new("Folder", workspace)
-ESPFolder.Name = "MarkHubESP"
-
--- Fungsi untuk bikin ESP 1 pemain
-local function createESP(player)
-	if player == LocalPlayer then return end
-
-	player.CharacterAdded:Connect(function(character)
-		wait(1) -- Tunggu part muncul
-		local head = character:WaitForChild("Head", 3)
-		if not head then return end
-
-		-- Cek dan hapus ESP lama
-		if head:FindFirstChild("ESP") then
-			head.ESP:Destroy()
-		end
-
-		local billboard = Instance.new("BillboardGui")
-		billboard.Name = "ESP"
-		billboard.Adornee = head
-		billboard.Size = UDim2.new(0, 100, 0, 40)
-		billboard.StudsOffset = Vector3.new(0, 2, 0)
-		billboard.AlwaysOnTop = true
-		billboard.Parent = head
-
-		local text = Instance.new("TextLabel")
-		text.Size = UDim2.new(1, 0, 1, 0)
-		text.BackgroundTransparency = 1
-		text.TextColor3 = Color3.fromRGB(255, 0, 0)
-		text.TextStrokeTransparency = 0
-		text.Font = Enum.Font.GothamBold
-		text.TextScaled = true
-		text.Text = player.Name
-		text.Parent = billboard
-
-		-- Kalau dia Wanted, ubah warna jadi kuning
-		local function updateColor()
-			local stats = player:FindFirstChild("leaderstats")
-			if stats and stats:FindFirstChild("Wanted") and tonumber(stats.Wanted.Value) > 0 then
-				text.TextColor3 = Color3.fromRGB(255, 255, 0) -- Wanted = Kuning
+RunService.RenderStepped:Connect(function()
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= Players.LocalPlayer then
+			if _G.ESPEnabled then
+				createBillboard(player)
 			else
-				text.TextColor3 = Color3.fromRGB(255, 0, 0) -- Normal = Merah
+				if player.Character and player.Character:FindFirstChild("Head") then
+					local old = player.Character.Head:FindFirstChild("MarkHubESP")
+					if old then old:Destroy() end
+				end
 			end
 		end
-
-		updateColor()
-		task.spawn(function()
-			while text.Parent and player.Parent do
-				updateColor()
-				wait(2)
-			end
-		end)
-	end)
-end
-
--- Pasang ke semua pemain yang sudah ada
-for _, p in pairs(Players:GetPlayers()) do
-	createESP(p)
-end
-
--- Kalau ada player baru masuk
-Players.PlayerAdded:Connect(createESP)
+	end
+end)

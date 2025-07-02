@@ -1,21 +1,19 @@
--- MarkHub by DeadMark666X
-
+-- MarkHub by DeadMark666X (Improved Version)
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local Camera = workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
+local player = Players.LocalPlayer
 
-local CorrectKey = "MARK123"
+local CorrectKey = "MARK123" -- Ganti key di sini
 
-local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+-- GUI Setup
+local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 ScreenGui.Name = "MarkHub"
 ScreenGui.ResetOnSpawn = false
 
--- UI Utama
+-- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 420, 0, 320)
-MainFrame.Position = UDim2.new(0.5, -210, 0.5, -160)
+MainFrame.Size = UDim2.new(0, 460, 0, 360)
+MainFrame.Position = UDim2.new(0.5, -230, 0.5, -180)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.BorderSizePixel = 0
 MainFrame.Visible = false
@@ -23,15 +21,21 @@ MainFrame.Parent = ScreenGui
 MainFrame.Active = true
 MainFrame.Draggable = true
 
+-- Shadow
+local Shadow = Instance.new("UICorner", MainFrame)
+Shadow.CornerRadius = UDim.new(0, 12)
+
+-- Header
 local Header = Instance.new("TextLabel")
 Header.Size = UDim2.new(1, 0, 0, 40)
 Header.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-Header.Text = "MarkHub by DeadMark666X"
+Header.Text = "MarkHub - Emergency Hamburg"
 Header.TextColor3 = Color3.fromRGB(255, 255, 255)
 Header.Font = Enum.Font.GothamBold
 Header.TextSize = 20
 Header.Parent = MainFrame
 
+-- Close Button
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 35, 0, 30)
 CloseBtn.Position = UDim2.new(1, -40, 0, 5)
@@ -45,7 +49,36 @@ CloseBtn.MouseButton1Click:Connect(function()
 	MainFrame.Visible = false
 end)
 
--- Frame Input Key
+-- Menu Buttons
+local function createToggle(name, positionY)
+	local Toggle = Instance.new("TextButton")
+	Toggle.Size = UDim2.new(0.9, 0, 0, 40)
+	Toggle.Position = UDim2.new(0.05, 0, 0, positionY)
+	Toggle.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Toggle.Font = Enum.Font.GothamBold
+	Toggle.TextSize = 16
+	Toggle.Text = name .. ": OFF"
+	Toggle.Parent = MainFrame
+	Toggle.MouseButton1Click:Connect(function()
+		if Toggle.Text:find("OFF") then
+			Toggle.Text = name .. ": ON"
+			Toggle.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+			if name == "Aimbot" then _G.MarkHub_Aimbot = true end
+			if name == "ESP" then _G.MarkHub_ESP = true end
+		else
+			Toggle.Text = name .. ": OFF"
+			Toggle.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+			if name == "Aimbot" then _G.MarkHub_Aimbot = false end
+			if name == "ESP" then _G.MarkHub_ESP = false end
+		end
+	end)
+end
+
+createToggle("Aimbot", 60)
+createToggle("ESP", 110)
+
+-- Key Input Frame
 local KeyFrame = Instance.new("Frame")
 KeyFrame.Size = UDim2.new(0, 320, 0, 180)
 KeyFrame.Position = UDim2.new(0.5, -160, 0.5, -90)
@@ -83,72 +116,10 @@ SubmitBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
+-- RightControl Toggle
 UserInputService.InputBegan:Connect(function(input, processed)
 	if processed then return end
 	if input.KeyCode == Enum.KeyCode.RightControl then
 		MainFrame.Visible = not MainFrame.Visible
-	end
-end)
-
--- ESP sederhana
-local function setupESP(player)
-	if player.Character and player.Character:FindFirstChild("Head") and not player.Character:FindFirstChild("ESPLabel") then
-		local billboard = Instance.new("BillboardGui", player.Character.Head)
-		billboard.Name = "ESPLabel"
-		billboard.Size = UDim2.new(0, 100, 0, 40)
-		billboard.AlwaysOnTop = true
-
-		local label = Instance.new("TextLabel", billboard)
-		label.Size = UDim2.new(1, 0, 1, 0)
-		label.BackgroundTransparency = 1
-		label.Text = player.Name
-		label.TextColor3 = Color3.new(1, 0, 0)
-		label.TextStrokeTransparency = 0
-		label.Font = Enum.Font.GothamBold
-		label.TextSize = 14
-	end
-end
-
-for _, p in pairs(Players:GetPlayers()) do
-	if p ~= LocalPlayer then
-		setupESP(p)
-	end
-end
-
-Players.PlayerAdded:Connect(function(p)
-	p.CharacterAdded:Connect(function()
-		wait(1)
-		setupESP(p)
-	end)
-end)
-
--- Aimbot semua musuh
-local function getClosestEnemy()
-	local shortest = math.huge
-	local target = nil
-
-	for _, player in pairs(Players:GetPlayers()) do
-		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-			local hrp = player.Character.HumanoidRootPart
-			local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
-			if onScreen then
-				local dist = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(screenPos.X, screenPos.Y)).Magnitude
-				if dist < shortest then
-					shortest = dist
-					target = player
-				end
-			end
-		end
-	end
-
-	return target
-end
-
-RunService.RenderStepped:Connect(function()
-	if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-		local target = getClosestEnemy()
-		if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-			Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Character.HumanoidRootPart.Position)
-		end
 	end
 end)

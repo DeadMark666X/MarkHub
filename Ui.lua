@@ -1,31 +1,100 @@
--- MARK/HUB UI by DeadMark666X
+-- MARK HUB UI (Upgraded Red UI - NatHub Style)
 local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
--- UI Container
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MarkHubUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
+-- Create GUI
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "MarkHubUI"
+gui.ResetOnSpawn = false
 
--- Draggable Frame (Main Panel)
-local Main = Instance.new("Frame")
-Main.Name = "MainFrame"
-Main.Size = UDim2.new(0, 400, 0, 300)
-Main.Position = UDim2.new(0.5, -200, 0.5, -150)
-Main.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-Main.BorderSizePixel = 0
-Main.Visible = false
-Main.Parent = ScreenGui
+-- Main Frame
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 450, 0, 320)
+main.Position = UDim2.new(0.5, -225, 0.5, -160)
+main.BackgroundColor3 = Color3.fromRGB(35, 0, 0)
+main.BorderSizePixel = 0
+main.Visible = false
+main.Parent = gui
 
--- Make draggable
-local UIS = game:GetService("UserInputService")
-local dragging, dragInput, dragStart, startPos
-Main.InputBegan:Connect(function(input)
+-- Rounded Corners
+local UICorner = Instance.new("UICorner", main)
+UICorner.CornerRadius = UDim.new(0, 12)
+
+-- Shadow
+local shadow = Instance.new("ImageLabel", main)
+shadow.Size = UDim2.new(1, 30, 1, 30)
+shadow.Position = UDim2.new(0, -15, 0, -15)
+shadow.Image = "rbxassetid://1316045217"
+shadow.ImageTransparency = 0.7
+shadow.BackgroundTransparency = 1
+shadow.ZIndex = 0
+
+-- Title
+local title = Instance.new("TextLabel", main)
+title.Text = "🔥 Mark/Hub - Emergency Hamburg"
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.ZIndex = 2
+
+local cornerTitle = Instance.new("UICorner", title)
+cornerTitle.CornerRadius = UDim.new(0, 12)
+
+-- Logo (optional)
+local logo = Instance.new("ImageLabel", title)
+logo.Image = "rbxassetid://14890949821" -- Ganti ID logomu kalau ada
+logo.Size = UDim2.new(0, 40, 0, 40)
+logo.Position = UDim2.new(0, 5, 0, 0)
+logo.BackgroundTransparency = 1
+
+-- Content Area
+local content = Instance.new("Frame", main)
+content.Size = UDim2.new(1, -20, 1, -60)
+content.Position = UDim2.new(0, 10, 0, 50)
+content.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+content.BorderSizePixel = 0
+local contentCorner = Instance.new("UICorner", content)
+contentCorner.CornerRadius = UDim.new(0, 10)
+
+-- Placeholder Content
+local label = Instance.new("TextLabel", content)
+label.Text = "🚧 Features will be here soon"
+label.TextSize = 18
+label.Size = UDim2.new(1, 0, 0, 30)
+label.TextColor3 = Color3.new(1, 1, 1)
+label.BackgroundTransparency = 1
+label.Position = UDim2.new(0, 0, 0, 5)
+label.Font = Enum.Font.Gotham
+
+-- Menu Toggle Button
+local toggleBtn = Instance.new("TextButton", gui)
+toggleBtn.Text = "☰ Menu"
+toggleBtn.Size = UDim2.new(0, 120, 0, 40)
+toggleBtn.Position = UDim2.new(0, 15, 0, 15)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 16
+local toggleCorner = Instance.new("UICorner", toggleBtn)
+toggleCorner.CornerRadius = UDim.new(0, 10)
+
+toggleBtn.MouseButton1Click:Connect(function()
+	main.Visible = not main.Visible
+	toggleBtn.Text = main.Visible and "✖ Close" or "☰ Menu"
+end)
+
+-- Make Draggable
+local dragging = false
+local dragStart, startPos
+
+main.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		dragging = true
 		dragStart = input.Position
-		startPos = Main.Position
+		startPos = main.Position
 
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
@@ -38,61 +107,7 @@ end)
 UIS.InputChanged:Connect(function(input)
 	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 		local delta = input.Position - dragStart
-		Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
-end)
-
--- Title Bar
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 40)
-title.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
-title.Text = "🔥 MARK/HUB - Emergency Hamburg"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 20
-title.Parent = Main
-
--- Logo Image
-local logo = Instance.new("ImageLabel")
-logo.Size = UDim2.new(0, 40, 0, 40)
-logo.Position = UDim2.new(0, 0, 0, 0)
-logo.BackgroundTransparency = 1
-logo.Image = "rbxassetid://14890949821" -- Ganti ke ID logomu sendiri kalau ada
-logo.Parent = title
-
--- Content Area (untuk tombol fitur nanti)
-local content = Instance.new("Frame")
-content.Name = "Content"
-content.Size = UDim2.new(1, -20, 1, -60)
-content.Position = UDim2.new(0, 10, 0, 50)
-content.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-content.BorderSizePixel = 0
-content.Parent = Main
-
--- Placeholder label
-local text = Instance.new("TextLabel")
-text.Size = UDim2.new(1, 0, 0, 30)
-text.Position = UDim2.new(0, 0, 0, 10)
-text.Text = "Coming soon... 🚧"
-text.TextColor3 = Color3.new(1, 1, 1)
-text.BackgroundTransparency = 1
-text.Font = Enum.Font.SourceSans
-text.TextSize = 18
-text.Parent = content
-
--- Toggle Button (menu buka/tutup)
-local toggle = Instance.new("TextButton")
-toggle.Name = "MenuToggle"
-toggle.Size = UDim2.new(0, 120, 0, 40)
-toggle.Position = UDim2.new(0, 10, 0, 10)
-toggle.Text = "☰ Open Menu"
-toggle.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-toggle.TextColor3 = Color3.new(1, 1, 1)
-toggle.Font = Enum.Font.SourceSansBold
-toggle.TextSize = 16
-toggle.Parent = ScreenGui
-
-toggle.MouseButton1Click:Connect(function()
-	Main.Visible = not Main.Visible
-	toggle.Text = Main.Visible and "✖ Close Menu" or "☰ Open Menu"
 end)
